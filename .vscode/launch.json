@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-DiegoAApplication<DiegoA>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.library.DiegoA.DiegoAApplication",
+            "projectName": "DiegoA",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

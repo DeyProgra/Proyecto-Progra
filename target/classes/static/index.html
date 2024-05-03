@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Book</title>
+</head>
+<body>
+    <h1>Add Book</h1>
+    <form id="addBookForm">
+        <label for="code">Code:</label><br>
+        <input type="text" id="code" name="code" required><br>
+        
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name" required><br>
+        
+        <label for="genre">Genre:</label><br>
+        <input type="text" id="genre" name="genre" required><br>
+        
+        <label for="date">Date:</label><br>
+        <input type="text" id="date" name="date" required><br>
+        
+        <label for="author">Author:</label><br>
+        <input type="text" id="author" name="author" required><br><br>
+        
+        <button type="button" onclick="submitForm()">Submit</button>
+    </form>
+
+    <script>
+
+
+        tableUrl = "http://libreriaproyecto-env.eba-3sssjxca.us-east-2.elasticbeanstalk.com/books"
+
+        function submitForm() {
+            const formData = {
+                code: document.getElementById('code').value,
+                name: document.getElementById('name').value,
+                genre: document.getElementById('genre').value,
+                date: document.getElementById('date').value,
+                author: document.getElementById('author').value
+            };
+
+            fetch(tableUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al agregar libro');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Libro agregado exitosamente:', data);
+                alert('Libro agregado exitosamente');
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un error al agregar el libro');
+            });
+        }
+    </script>
+</body>
+</html>

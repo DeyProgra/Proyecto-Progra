@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<style>
+    table {
+        border-collapse: collapse; /* Para evitar espacios entre celdas */
+        width: 100%; /* Ancho completo de la tabla */
+    }
+    th, td {
+        border: 1px solid black; /* Borde de 1 píxel de ancho, sólido y de color negro */
+        padding: 8px; /* Espaciado interno */
+        text-align: left; /* Alineación del texto */
+    }
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All books from library</title>
+</head>
+<body>
+<h1>Books</h1>
+
+<input type="text" id="codeFilter" placeholder="Filtrar por código">
+<input type="text" id="nameFilter" placeholder="Filtrar por nombre">
+<p></p>
+
+<table id="booksTable">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Genre</th>
+        <th>Publication Date</th>
+        <th>Author</th>
+        <th>Options</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+</body>
+
+
+<script>
+    const url = "http://libreriaproyecto-env.eba-3sssjxca.us-east-2.elasticbeanstalk.com/books"
+    populateTable();
+
+
+    function populateTable(){
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const booksTableBody = document.querySelector('#booksTable tbody');
+                data.forEach(book => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${book.id}</td>
+                        <td>${book.code}</td>
+                        <td>${book.name}</td>
+                        <td>${book.genre}</td>
+                        <td>${book.date}</td>
+                        <td>${book.author}</td>
+                        <td><button id="deleteButton" onclick="deleteBook(this)">Delete</button> <button id="${book.id}" onclick="editBook(this)">Edit</button> </td>
+                    `;
+                    booksTableBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error al obtener los datos de la API: ', error);
+            });
+
+    };
+
+
+    document.getElementById('codeFilter').addEventListener('input', filterTable);
+    document.getElementById('nameFilter').addEventListener('input', filterTable);
+
+    function filterTable() {
+        const codeFilter = document.getElementById('codeFilter').value.toUpperCase();
+        const nameFilter = document.getElementById('nameFilter').value.toUpperCase();
+        const rows = document.querySelectorAll('#booksTable tbody tr');
+
+        rows.forEach(row => {
+            const code = row.cells[1].textContent.toUpperCase();
+            const name = row.cells[2].textContent.toUpperCase();
+
+            if (code.includes(codeFilter) && name.includes(nameFilter)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+
+    function deleteBook(button){
+        var row = button.parentNode.parentNode; // Obtiene la fila que contiene el botón
+        var bookId = row.querySelector('td:first-child').textContent; // Obtiene el ID del estudiante de la primera celda de la fila
+        buttonId = button.getAttribute('id');
+    
+
+
+        // Elimina el estudiante de la base de datos a través de la API
+        fetch(url + "/delete/id?id=" + bookId, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al eliminar el libro');
+            }
+            // Elimina la fila de la tabla en la interfaz de usuario después de eliminar el estudiante de la base de datos
+            row.parentNode.removeChild(row);
+            console.log('Libro eliminado exitosamente');
+            alert("Se eliminó el libro exitosamente");
+        })
+        .catch(error => {
+            console.error('Error al eliminar el libro: ', error);
+            alert("Error al eliminar el libro");
+        });
+    }
+
+
+    function editBook(button){
+        var row = button.parentNode.parentNode;
+        var book = row.querySelector('td:first-child').textContent;
+        
+        let codeCell = row.children.item(1);
+        let nameCell = row.children.item(2);
+        let genreCell = row.children.item(3);
+        let dateCell = row.children.item(4);
+        let authorCell = row.children.item(5);
+        
+
+        codeCell.setAttribute("contenteditable", "true");
+        nameCell.setAttribute("contenteditable", "true");
+        genreCell.setAttribute("contenteditable", "true");
+        dateCell.setAttribute("contenteditable", "true");
+        authorCell.setAttribute("contenteditable", "true");
+
+        row.children.item(1).focus();
+
+        let editButton = row.children.item(6).children.item(1);
+        editButton.setAttribute("class","btn btn-success");
+        editButton.innerHTML = "Save";
+        console.log(button.id);
+        editButton.setAttribute("onClick","saveBook("+button.id+")");
+
+    }
+
+    function saveBook(bookId) {
+        var row = document.getElementById(bookId).parentNode.parentNode;
+        var book = {
+            id: row.querySelector('td:nth-child(1)').textContent,
+            code: row.querySelector('td:nth-child(2)').textContent,
+            name: row.querySelector('td:nth-child(3)').textContent,
+            genre: row.querySelector('td:nth-child(4)').textContent,
+            date: row.querySelector('td:nth-child(5)').textContent,
+            author: row.querySelector('td:nth-child(6)').textContent
+        };
+
+        const apiUrl = url + "/edit/" + bookId
+        const requestOptions = { 
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(book)
+        }
+        fetch(apiUrl, requestOptions)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al guardar el libro');
+            }
+            console.log('Libro guardado exitosamente');
+            alert("Se guardó el libro exitosamente");
+        })
+        .then(bookFromApi => {
+            console.log("success: ",bookFromApi);
+            cleanTableRows();
+            populateTable();
+        })
+        .catch(error => {
+            console.error('Error al guardar el libro: ', error);
+            alert("Error al guardar el libro");
+        });
+    }
+
+    function cleanTableRows() {
+        var tableHeaderRowCount = 1;
+        var table = document.getElementById('booksTable');
+        var rowCount = table.rows.length;
+        for (var i = tableHeaderRowCount; i < rowCount; i++) {
+            table.deleteRow(tableHeaderRowCount);
+        }
+    }
+</script>
+
+
+</html>

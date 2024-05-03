@@ -1,0 +1,7 @@
+com\library\DiegoA\ExceptionHandler\DuplicateUserCodeException.class
+com\library\DiegoA\ServletInitializer.class
+com\library\DiegoA\DiegoAApplication.class
+com\library\DiegoA\services\BookService.class
+com\library\DiegoA\models\BookModel.class
+com\library\DiegoA\repositories\BookRepository.class
+com\library\DiegoA\controllers\BookController.class
